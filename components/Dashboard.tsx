@@ -189,19 +189,20 @@ export default function Dashboard() {
     justifyContent: 'center',
     width: '22px',
     height: '22px',
-    background: '#161619',
-    border: '1px solid #1E1E24',
+    background: 'rgba(22,22,25,0.7)',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(249,115,22,0.15)',
     borderRadius: '4px',
     color: '#6B6B78',
     cursor: 'pointer',
-    transition: 'color 100ms, border-color 100ms',
+    transition: 'color 150ms, border-color 150ms',
   } as React.CSSProperties
 
   return (
     <div
       className="flex h-screen overflow-hidden"
       style={{
-        background: '#08080A',
+        background: 'radial-gradient(ellipse 80% 60% at 0% 0%, rgba(249,115,22,0.08) 0%, transparent 55%), radial-gradient(ellipse 40% 40% at 100% 100%, rgba(249,115,22,0.04) 0%, transparent 50%), #08080A',
         opacity: mounted ? 1 : 0,
         transition: 'opacity 200ms ease',
       }}
@@ -212,7 +213,11 @@ export default function Dashboard() {
         {/* Mobile top bar */}
         <div
           className="flex md:hidden items-center justify-between px-4 py-3 shrink-0"
-          style={{ borderBottom: '1px solid #1E1E24' }}
+          style={{
+            borderBottom: '1px solid rgba(249,115,22,0.12)',
+            background: 'rgba(8,8,10,0.5)',
+            backdropFilter: 'blur(12px)',
+          }}
         >
           <Logo spinCount={spinCount} />
           <div className="flex items-center gap-1.5">
@@ -246,7 +251,11 @@ export default function Dashboard() {
         {/* Desktop section header */}
         <div
           className="hidden md:flex items-center gap-2 px-6 py-3.5 shrink-0"
-          style={{ borderBottom: '1px solid #1E1E24' }}
+          style={{
+            borderBottom: '1px solid rgba(249,115,22,0.12)',
+            background: 'rgba(8,8,10,0.4)',
+            backdropFilter: 'blur(10px)',
+          }}
         >
           {(activeTab === 'hoje' || activeTab === 'semana') && (
             <button
@@ -258,8 +267,8 @@ export default function Dashboard() {
             </button>
           )}
           <h1
-            className="text-[11px] font-semibold uppercase tracking-widest"
-            style={{ color: '#F0F0F3' }}
+            className="text-[11px] font-semibold uppercase"
+            style={{ color: '#F0F0F3', letterSpacing: '0.22em' }}
           >
             {renderHeaderTitle()}
           </h1>

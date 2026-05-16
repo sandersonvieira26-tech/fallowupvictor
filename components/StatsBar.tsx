@@ -33,11 +33,11 @@ function StatCard({
     <div
       className="flex flex-col px-4 py-3 relative"
       style={{
-        background: '#0F0F12',
-        borderLeft: '1px solid #1E1E24',
-        borderRight: '1px solid #1E1E24',
-        borderBottom: '1px solid #1E1E24',
-        borderTop: `2px solid ${color}`,
+        background: 'linear-gradient(135deg, rgba(249,115,22,0.04) 0%, rgba(15,15,18,0.95) 60%)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(249,115,22,0.1)',
+        borderTopColor: color,
+        borderTopWidth: '2px',
         borderRadius: '6px',
       }}
     >
@@ -94,7 +94,7 @@ export default function StatsBar({
   return (
     <div
       className="px-4 md:px-6 py-3 md:py-4 shrink-0"
-      style={{ borderBottom: '1px solid #1E1E24' }}
+      style={{ borderBottom: '1px solid rgba(249,115,22,0.1)' }}
     >
       {/* Stats: 2x2 grid on mobile, flex row on desktop */}
       <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center md:gap-3">

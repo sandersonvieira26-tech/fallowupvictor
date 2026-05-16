@@ -29,13 +29,14 @@ export default function Logo({ spinCount = 0 }: LogoProps) {
         fontSize: '13px',
         letterSpacing: '0.12em',
         color: '#F97316',
+        textShadow: '0 0 12px rgba(249,115,22,0.35)',
       }}
     >
       <span>AUTCHRON</span>
       <span
         ref={gearRef}
         className="inline-flex items-center justify-center"
-        style={{ color: '#F97316', lineHeight: 1 }}
+        style={{ color: '#F97316', lineHeight: 1, filter: 'drop-shadow(0 0 5px rgba(249,115,22,0.65))' }}
       >
         <Settings size={13} strokeWidth={2} />
       </span>

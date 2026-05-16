@@ -20,7 +20,11 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
       className="flex md:hidden fixed bottom-0 left-0 right-0 z-40"
-      style={{ background: '#0F0F12', borderTop: '1px solid #1E1E24' }}
+      style={{
+        background: 'rgba(15,15,18,0.9)',
+        backdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(249,115,22,0.12)',
+      }}
     >
       {NAV_ITEMS.map(({ id, label, Icon }) => {
         const active = activeTab === id
