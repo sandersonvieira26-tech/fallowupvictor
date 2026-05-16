@@ -12,7 +12,7 @@ WORKDIR /app
 RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV DATABASE_URL="file:/app/data/db.sqlite"
+ENV DATABASE_URL="postgresql://localhost:5432/db"
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN node node_modules/prisma/build/index.js generate
 RUN npm run build
@@ -39,8 +39,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modul
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
-RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 USER nextjs
 EXPOSE 3000
