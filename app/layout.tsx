@@ -1,19 +1,23 @@
 import type { Metadata } from 'next'
+import { Inter, Orbitron, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' })
+
 export const metadata: Metadata = {
-  title: 'Dashboard de Agendamentos',
-  description: 'Gerenciamento de agendamentos para profissional de saúde',
+  title: 'AUTCHRONOS',
+  description: 'Sistema de gerenciamento de agendamentos',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className="bg-[#0f172a] antialiased">{children}</body>
+    <html
+      lang="pt-BR"
+      className={`${inter.variable} ${orbitron.variable} ${jetbrainsMono.variable}`}
+    >
+      <body>{children}</body>
     </html>
   )
 }
