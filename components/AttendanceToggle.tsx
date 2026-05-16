@@ -1,3 +1,6 @@
+'use client'
+
+import { Check, X } from 'lucide-react'
 import type { AppointmentStatus } from '@/app/types'
 
 interface AttendanceToggleProps {
@@ -11,42 +14,35 @@ export default function AttendanceToggle({
   onStatusChange,
   isLoading = false,
 }: AttendanceToggleProps) {
-  function handleAttend() {
-    onStatusChange(status === 'attended' ? 'scheduled' : 'attended')
-  }
-
-  function handleNoShow() {
-    onStatusChange(status === 'no-show' ? 'scheduled' : 'no-show')
-  }
-
-  const attendedActive = status === 'attended'
-  const noShowActive = status === 'no-show'
-
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1.5 shrink-0">
       <button
-        onClick={handleAttend}
-        disabled={isLoading}
         aria-label="✓ Marcar como compareceu"
-        className={`rounded px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-50 ${
-          attendedActive
-            ? 'bg-green-900 text-green-400'
-            : 'border border-slate-600 bg-[#1e293b] text-slate-500 hover:border-green-600 hover:text-green-400'
-        }`}
+        onClick={() => onStatusChange(status === 'attended' ? 'scheduled' : 'attended')}
+        disabled={isLoading}
+        className="flex h-8 w-8 items-center justify-center transition-all active:scale-95 disabled:opacity-40"
+        style={{
+          background: status === 'attended' ? '#16A34A' : '#161619',
+          border: status === 'attended' ? '1px solid #16A34A' : '1px solid #1E1E24',
+          borderRadius: '6px',
+          color: status === 'attended' ? '#fff' : '#6B6B78',
+        }}
       >
-        ✓
+        <Check size={13} strokeWidth={2.5} />
       </button>
       <button
-        onClick={handleNoShow}
-        disabled={isLoading}
         aria-label="✗ Marcar como falta"
-        className={`rounded px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-50 ${
-          noShowActive
-            ? 'bg-red-900 text-red-400'
-            : 'border border-slate-600 bg-[#1e293b] text-slate-500 hover:border-red-600 hover:text-red-400'
-        }`}
+        onClick={() => onStatusChange(status === 'no-show' ? 'scheduled' : 'no-show')}
+        disabled={isLoading}
+        className="flex h-8 w-8 items-center justify-center transition-all active:scale-95 disabled:opacity-40"
+        style={{
+          background: status === 'no-show' ? '#DC2626' : '#161619',
+          border: status === 'no-show' ? '1px solid #DC2626' : '1px solid #1E1E24',
+          borderRadius: '6px',
+          color: status === 'no-show' ? '#fff' : '#6B6B78',
+        }}
       >
-        ✗
+        <X size={13} strokeWidth={2.5} />
       </button>
     </div>
   )
