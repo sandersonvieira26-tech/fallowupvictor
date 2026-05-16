@@ -10,12 +10,16 @@ interface NoShowsTabProps {
 export default function NoShowsTab({ appointments, onStatusChange, updatingId }: NoShowsTabProps) {
   if (appointments.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-slate-500">Nenhuma falta registrada.</p>
+      <div className="flex items-center justify-center py-16">
+        <p className="text-sm" style={{ color: '#2E2E36' }}>
+          Nenhuma falta registrada
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div style={{ border: '1px solid #1E1E24', borderRadius: '6px', overflow: 'hidden' }}>
       {appointments.map((appt) => (
         <AppointmentRow
           key={appt.id}

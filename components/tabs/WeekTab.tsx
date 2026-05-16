@@ -7,20 +7,8 @@ interface WeekTabProps {
   updatingId: string | null
 }
 
-function groupByDate(appointments: AppointmentData[]): Map<string, AppointmentData[]> {
-  const groups = new Map<string, AppointmentData[]>()
-  for (const appt of appointments) {
-    const dateKey = appt.date.split('T')[0]
-    const existing = groups.get(dateKey) ?? []
-    existing.push(appt)
-    groups.set(dateKey, existing)
-  }
-  return groups
-}
-
-function formatGroupDate(dateStr: string): string {
-  const date = new Date(`${dateStr}T00:00:00.000Z`)
-  return date.toLocaleDateString('pt-BR', {
+function formatGroupDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString('pt-BR', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
@@ -29,24 +17,34 @@ function formatGroupDate(dateStr: string): string {
 }
 
 export default function WeekTab({ appointments, onStatusChange, updatingId }: WeekTabProps) {
-  if (appointments.length === 0) {
+  const grouped = appointments.reduce<Record<string, AppointmentData[]>>((acc, appt) => {
+    const key = new Date(appt.date).toISOString().split('T')[0]
+    if (!acc[key]) acc[key] = []
+    acc[key].push(appt)
+    return acc
+  }, {})
+
+  if (Object.keys(grouped).length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-slate-500">
-        Nenhum agendamento para esta semana.
-      </p>
+      <div className="flex items-center justify-center py-16">
+        <p className="text-sm" style={{ color: '#2E2E36' }}>
+          Nenhum agendamento para a semana
+        </p>
+      </div>
     )
   }
 
-  const groups = groupByDate(appointments)
-
   return (
-    <div className="flex flex-col gap-4">
-      {[...groups.entries()].map(([dateKey, appts]) => (
+    <div className="flex flex-col gap-6">
+      {Object.entries(grouped).map(([dateKey, appts]) => (
         <div key={dateKey}>
-          <div className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <p
+            className="mb-2 text-[10px] font-semibold uppercase tracking-widest capitalize"
+            style={{ color: '#6B6B78' }}
+          >
             {formatGroupDate(dateKey)}
-          </div>
-          <div className="flex flex-col gap-1.5">
+          </p>
+          <div style={{ border: '1px solid #1E1E24', borderRadius: '6px', overflow: 'hidden' }}>
             {appts.map((appt) => (
               <AppointmentRow
                 key={appt.id}
