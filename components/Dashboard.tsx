@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Sidebar from '@/components/Sidebar'
 import StatsBar from '@/components/StatsBar'
 import NewAppointmentModal from '@/components/NewAppointmentModal'
 import TodayTab from '@/components/tabs/TodayTab'
@@ -11,11 +12,17 @@ import type { AppointmentData, AppointmentStatus, ClientWithAppointments } from 
 
 type Tab = 'hoje' | 'semana' | 'clientes' | 'faltas'
 
-const TAB_LABELS: Record<Tab, string> = {
+const TAB_TITLES: Record<Tab, string> = {
   hoje: 'Hoje',
   semana: 'Semana',
   clientes: 'Clientes',
   faltas: 'Faltas',
+}
+
+function formatHeaderDate(): string {
+  return new Date()
+    .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+    .toUpperCase()
 }
 
 export default function Dashboard() {
@@ -28,9 +35,10 @@ export default function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const [statusError, setStatusError] = useState<string | null>(null)
+  const [spinCount, setSpinCount] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (triggerGear = false) => {
     setFetchError(null)
     try {
       const [todayRes, weekRes, noShowRes, clientsRes] = await Promise.all([
@@ -49,41 +57,36 @@ export default function Dashboard() {
       setWeekAppointments(Array.isArray(week) ? week : [])
       setNoShowAppointments(Array.isArray(noShows) ? noShows : [])
       setClients(Array.isArray(clientsData) ? clientsData : [])
+      if (triggerGear) setSpinCount((c) => c + 1)
     } catch (err) {
       console.error('Dashboard fetch error:', err)
-      setFetchError('Falha ao carregar dados. Tente novamente.')
+      setFetchError('Falha ao carregar dados.')
     }
   }, [])
 
   useEffect(() => {
-    fetchData()
+    setTimeout(() => {
+      setMounted(true)
+      setSpinCount(1)
+      fetchData()
+    }, 150)
   }, [fetchData])
 
   async function handleStatusChange(id: string, status: AppointmentStatus) {
     setUpdatingId(id)
-    setStatusError(null)
     try {
       const res = await fetch(`/api/appointments/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
-      if (res.ok) {
-        await fetchData()
-      } else {
-        setStatusError('Erro ao atualizar status. Tente novamente.')
-        await fetchData()
-      }
+      await fetchData(res.ok)
     } finally {
       setUpdatingId(null)
     }
   }
 
-  async function handleCreateAppointment(data: {
-    name: string
-    phone: string
-    date: string
-  }) {
+  async function handleCreateAppointment(data: { name: string; phone: string; date: string }) {
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/appointments', {
@@ -92,7 +95,7 @@ export default function Dashboard() {
         body: JSON.stringify(data),
       })
       if (!res.ok) throw new Error('Failed to create appointment')
-      await fetchData()
+      await fetchData(true)
     } finally {
       setIsSubmitting(false)
     }
@@ -103,72 +106,80 @@ export default function Dashboard() {
   const todayNewClients = todayAppointments.filter((a) => a.client.isNew).length
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100">
-      <header className="border-b border-[#1e293b] px-4 py-3">
-        <h1 className="text-sm font-bold text-slate-100">Dashboard de Agendamentos</h1>
-      </header>
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{
+        background: '#08080A',
+        opacity: mounted ? 1 : 0,
+        transition: 'opacity 200ms ease',
+      }}
+    >
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} spinCount={spinCount} />
 
-      <StatsBar
-        total={todayAppointments.length}
-        attended={todayAttended}
-        noShows={todayNoShows}
-        newClients={todayNewClients}
-        onNewAppointment={() => setIsModalOpen(true)}
-      />
-
-      {fetchError && (
-        <div className="mx-4 mt-3 rounded bg-red-900/40 px-4 py-2 text-xs text-red-400">
-          {fetchError}
-        </div>
-      )}
-      {statusError && (
-        <div className="mx-4 mt-3 rounded bg-red-900/40 px-4 py-2 text-xs text-red-400">
-          {statusError}
-        </div>
-      )}
-
-      {/* Tab navigation */}
-      <nav className="flex border-b border-[#1e293b] bg-[#0f172a] px-4">
-        {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs font-medium transition-colors ${
-              activeTab === tab
-                ? 'border-b-2 border-sky-400 text-sky-400'
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Section header */}
+        <div
+          className="flex items-center px-6 py-3.5"
+          style={{ borderBottom: '1px solid #1E1E24' }}
+        >
+          <h1
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: '#F0F0F3' }}
           >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </nav>
+            {TAB_TITLES[activeTab]} — {formatHeaderDate()}
+          </h1>
+        </div>
 
-      {/* Tab content */}
-      <main className="p-4">
-        {activeTab === 'hoje' && (
-          <TodayTab
-            appointments={todayAppointments}
-            onStatusChange={handleStatusChange}
-            updatingId={updatingId}
-          />
+        {/* Stats bar */}
+        <StatsBar
+          total={todayAppointments.length}
+          attended={todayAttended}
+          noShows={todayNoShows}
+          newClients={todayNewClients}
+          onNewAppointment={() => setIsModalOpen(true)}
+        />
+
+        {/* Error state */}
+        {fetchError && (
+          <div
+            className="mx-6 mt-4 px-4 py-2 text-xs"
+            style={{
+              background: 'rgba(220, 38, 38, 0.1)',
+              border: '1px solid rgba(220, 38, 38, 0.2)',
+              color: '#DC2626',
+              borderRadius: '6px',
+            }}
+          >
+            {fetchError}
+          </div>
         )}
-        {activeTab === 'semana' && (
-          <WeekTab
-            appointments={weekAppointments}
-            onStatusChange={handleStatusChange}
-            updatingId={updatingId}
-          />
-        )}
-        {activeTab === 'clientes' && <ClientsTab clients={clients} />}
-        {activeTab === 'faltas' && (
-          <NoShowsTab
-            appointments={noShowAppointments}
-            onStatusChange={handleStatusChange}
-            updatingId={updatingId}
-          />
-        )}
-      </main>
+
+        {/* Tab content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          {activeTab === 'hoje' && (
+            <TodayTab
+              appointments={todayAppointments}
+              onStatusChange={handleStatusChange}
+              updatingId={updatingId}
+            />
+          )}
+          {activeTab === 'semana' && (
+            <WeekTab
+              appointments={weekAppointments}
+              onStatusChange={handleStatusChange}
+              updatingId={updatingId}
+            />
+          )}
+          {activeTab === 'clientes' && <ClientsTab clients={clients} />}
+          {activeTab === 'faltas' && (
+            <NoShowsTab
+              appointments={noShowAppointments}
+              onStatusChange={handleStatusChange}
+              updatingId={updatingId}
+            />
+          )}
+        </main>
+      </div>
 
       {isModalOpen && (
         <NewAppointmentModal
