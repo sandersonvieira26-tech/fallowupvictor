@@ -70,3 +70,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 ::-webkit-scrollbar-track { background: #08080A; }
 ::-webkit-scrollbar-thumb { background: #1E1E24; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #6B6B78; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gear-spin-once { animation: none; }
+  .pulse-dot { animation: none; opacity: 1; }
+}

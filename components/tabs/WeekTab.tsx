@@ -36,7 +36,7 @@ export default function WeekTab({ appointments, onStatusChange, updatingId }: We
 
   return (
     <div className="flex flex-col gap-6">
-      {Object.entries(grouped).map(([dateKey, appts]) => (
+      {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([dateKey, appts]) => (
         <div key={dateKey}>
           <p
             className="mb-2 text-[10px] font-semibold uppercase tracking-widest capitalize"

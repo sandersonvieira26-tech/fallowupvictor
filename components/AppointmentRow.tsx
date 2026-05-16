@@ -9,7 +9,7 @@ interface AppointmentRowProps {
   isNew?: boolean
 }
 
-const STATUS_DOT_COLOR: Record<string, string> = {
+const STATUS_DOT_COLOR: Record<AppointmentStatus, string> = {
   scheduled: '#2E2E36',
   attended: '#16A34A',
   'no-show': '#DC2626',
@@ -31,7 +31,7 @@ export default function AppointmentRow({
   isNew = false,
 }: AppointmentRowProps) {
   const { client } = appointment
-  const dotColor = STATUS_DOT_COLOR[appointment.status] ?? '#2E2E36'
+  const dotColor = STATUS_DOT_COLOR[appointment.status]
 
   return (
     <div

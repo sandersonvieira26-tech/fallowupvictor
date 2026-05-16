@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface NewAppointmentModalProps {
   onClose: () => void
@@ -20,6 +20,14 @@ export default function NewAppointmentModal({
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const disabled = isSubmitting || loading
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !disabled) onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [disabled, onClose])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -87,6 +95,7 @@ export default function NewAppointmentModal({
               placeholder="Ex: João Silva"
               onFocus={handleFocus}
               onBlur={handleBlur}
+              autoFocus
               className="w-full px-3 py-2.5 text-sm disabled:opacity-50"
               style={inputStyle}
             />

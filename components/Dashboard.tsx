@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
 import StatsBar from '@/components/StatsBar'
 import NewAppointmentModal from '@/components/NewAppointmentModal'
@@ -19,14 +20,40 @@ const TAB_TITLES: Record<Tab, string> = {
   faltas: 'Faltas',
 }
 
-function formatHeaderDate(): string {
-  return new Date()
-    .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+function localDateISO(): string {
+  const d = new Date()
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function offsetDate(isoDate: string, days: number): string {
+  const d = new Date(isoDate + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().split('T')[0]
+}
+
+function formatDateLabel(isoDate: string): string {
+  return new Date(isoDate + 'T00:00:00Z')
+    .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
     .toUpperCase()
+}
+
+function formatWeekLabel(isoDate: string): string {
+  const start = new Date(isoDate + 'T00:00:00Z')
+  const end = new Date(isoDate + 'T00:00:00Z')
+  end.setUTCDate(end.getUTCDate() + 6)
+  const s = start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' }).toUpperCase()
+  const e = end.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).toUpperCase()
+  return `${s} – ${e}`
 }
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('hoje')
+  const [todayDate, setTodayDate] = useState(localDateISO)
+  const [weekDate, setWeekDate] = useState(localDateISO)
   const [todayAppointments, setTodayAppointments] = useState<AppointmentData[]>([])
   const [weekAppointments, setWeekAppointments] = useState<AppointmentData[]>([])
   const [noShowAppointments, setNoShowAppointments] = useState<AppointmentData[]>([])
@@ -34,16 +61,21 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [spinCount, setSpinCount] = useState(0)
   const [mounted, setMounted] = useState(false)
 
-  const fetchData = useCallback(async (triggerGear = false) => {
+  const fetchData = useCallback(async (
+    tDate: string,
+    wDate: string,
+    triggerGear = false
+  ) => {
     setFetchError(null)
     try {
       const [todayRes, weekRes, noShowRes, clientsRes] = await Promise.all([
-        fetch('/api/appointments?mode=day'),
-        fetch('/api/appointments?mode=week'),
+        fetch(`/api/appointments?mode=day&date=${tDate}`),
+        fetch(`/api/appointments?mode=week&date=${wDate}`),
         fetch('/api/appointments?mode=no-shows'),
         fetch('/api/clients'),
       ])
@@ -65,12 +97,26 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    setTimeout(() => {
+    const init = localDateISO()
+    const t = setTimeout(() => {
       setMounted(true)
       setSpinCount(1)
-      fetchData()
+      fetchData(init, init)
     }, 150)
+    return () => clearTimeout(t)
   }, [fetchData])
+
+  function navigateToday(delta: number) {
+    const newDate = offsetDate(todayDate, delta)
+    setTodayDate(newDate)
+    fetchData(newDate, weekDate)
+  }
+
+  function navigateWeek(delta: number) {
+    const newDate = offsetDate(weekDate, delta * 7)
+    setWeekDate(newDate)
+    fetchData(todayDate, newDate)
+  }
 
   async function handleStatusChange(id: string, status: AppointmentStatus) {
     setUpdatingId(id)
@@ -80,7 +126,14 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
-      await fetchData(res.ok)
+      if (!res.ok) {
+        setFetchError('Erro ao atualizar status.')
+        return
+      }
+      await fetchData(todayDate, weekDate, true)
+    } catch (err) {
+      console.error('handleStatusChange error:', err)
+      setFetchError('Erro ao atualizar status.')
     } finally {
       setUpdatingId(null)
     }
@@ -95,15 +148,52 @@ export default function Dashboard() {
         body: JSON.stringify(data),
       })
       if (!res.ok) throw new Error('Failed to create appointment')
-      await fetchData(true)
+      await fetchData(todayDate, weekDate, true)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function handleDeleteClient(id: string) {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        setFetchError('Erro ao excluir cliente.')
+        return
+      }
+      await fetchData(todayDate, weekDate, true)
+    } catch (err) {
+      console.error('handleDeleteClient error:', err)
+      setFetchError('Erro ao excluir cliente.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
   const todayAttended = todayAppointments.filter((a) => a.status === 'attended').length
   const todayNoShows = todayAppointments.filter((a) => a.status === 'no-show').length
   const todayNewClients = todayAppointments.filter((a) => a.client.isNew).length
+
+  function renderHeaderTitle() {
+    if (activeTab === 'hoje') return `HOJE — ${formatDateLabel(todayDate)}`
+    if (activeTab === 'semana') return `SEMANA — ${formatWeekLabel(weekDate)}`
+    return TAB_TITLES[activeTab].toUpperCase()
+  }
+
+  const navArrowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '22px',
+    height: '22px',
+    background: '#161619',
+    border: '1px solid #1E1E24',
+    borderRadius: '4px',
+    color: '#6B6B78',
+    cursor: 'pointer',
+    transition: 'color 100ms, border-color 100ms',
+  } as React.CSSProperties
 
   return (
     <div
@@ -119,15 +209,33 @@ export default function Dashboard() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Section header */}
         <div
-          className="flex items-center px-6 py-3.5"
+          className="flex items-center gap-2 px-6 py-3.5"
           style={{ borderBottom: '1px solid #1E1E24' }}
         >
+          {(activeTab === 'hoje' || activeTab === 'semana') && (
+            <button
+              onClick={() => activeTab === 'hoje' ? navigateToday(-1) : navigateWeek(-1)}
+              style={navArrowStyle}
+              aria-label="Anterior"
+            >
+              <ChevronLeft size={13} />
+            </button>
+          )}
           <h1
             className="text-[11px] font-semibold uppercase tracking-widest"
             style={{ color: '#F0F0F3' }}
           >
-            {TAB_TITLES[activeTab]} — {formatHeaderDate()}
+            {renderHeaderTitle()}
           </h1>
+          {(activeTab === 'hoje' || activeTab === 'semana') && (
+            <button
+              onClick={() => activeTab === 'hoje' ? navigateToday(1) : navigateWeek(1)}
+              style={navArrowStyle}
+              aria-label="Próximo"
+            >
+              <ChevronRight size={13} />
+            </button>
+          )}
         </div>
 
         {/* Stats bar */}
@@ -170,7 +278,13 @@ export default function Dashboard() {
               updatingId={updatingId}
             />
           )}
-          {activeTab === 'clientes' && <ClientsTab clients={clients} />}
+          {activeTab === 'clientes' && (
+            <ClientsTab
+              clients={clients}
+              onDeleteClient={handleDeleteClient}
+              deletingId={deletingId}
+            />
+          )}
           {activeTab === 'faltas' && (
             <NoShowsTab
               appointments={noShowAppointments}
