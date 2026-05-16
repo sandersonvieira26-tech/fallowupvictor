@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
+import Logo from '@/components/Logo'
 import StatsBar from '@/components/StatsBar'
 import NewAppointmentModal from '@/components/NewAppointmentModal'
 import TodayTab from '@/components/tabs/TodayTab'
@@ -207,9 +209,43 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} spinCount={spinCount} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Section header */}
+        {/* Mobile top bar */}
         <div
-          className="flex items-center gap-2 px-6 py-3.5"
+          className="flex md:hidden items-center justify-between px-4 py-3 shrink-0"
+          style={{ borderBottom: '1px solid #1E1E24' }}
+        >
+          <Logo spinCount={spinCount} />
+          <div className="flex items-center gap-1.5">
+            {(activeTab === 'hoje' || activeTab === 'semana') && (
+              <button
+                onClick={() => activeTab === 'hoje' ? navigateToday(-1) : navigateWeek(-1)}
+                style={navArrowStyle}
+                aria-label="Anterior"
+              >
+                <ChevronLeft size={13} />
+              </button>
+            )}
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: '#F0F0F3', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            >
+              {renderHeaderTitle()}
+            </span>
+            {(activeTab === 'hoje' || activeTab === 'semana') && (
+              <button
+                onClick={() => activeTab === 'hoje' ? navigateToday(1) : navigateWeek(1)}
+                style={navArrowStyle}
+                aria-label="Próximo"
+              >
+                <ChevronRight size={13} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop section header */}
+        <div
+          className="hidden md:flex items-center gap-2 px-6 py-3.5 shrink-0"
           style={{ borderBottom: '1px solid #1E1E24' }}
         >
           {(activeTab === 'hoje' || activeTab === 'semana') && (
@@ -263,7 +299,7 @@ export default function Dashboard() {
         )}
 
         {/* Tab content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
           {activeTab === 'hoje' && (
             <TodayTab
               appointments={todayAppointments}
@@ -294,6 +330,8 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {isModalOpen && (
         <NewAppointmentModal

@@ -72,7 +72,7 @@ export default function NewAppointmentModal({
       style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
     >
       <div
-        className="w-full max-w-[480px] mx-4"
+        className="w-full max-w-[480px] mx-4 max-h-[90vh] overflow-y-auto"
         style={{ background: '#0F0F12', border: '1px solid #1E1E24', borderRadius: '6px' }}
       >
         <div className="px-6 py-4" style={{ borderBottom: '1px solid #1E1E24' }}>

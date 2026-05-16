@@ -31,7 +31,7 @@ function StatCard({
 
   return (
     <div
-      className="flex flex-col px-4 py-3 min-w-[100px] relative"
+      className="flex flex-col px-4 py-3 relative"
       style={{
         background: '#0F0F12',
         borderLeft: '1px solid #1E1E24',
@@ -93,45 +93,55 @@ export default function StatsBar({
 }: StatsBarProps) {
   return (
     <div
-      className="flex flex-wrap items-center gap-3 px-6 py-4"
+      className="px-4 md:px-6 py-3 md:py-4 shrink-0"
       style={{ borderBottom: '1px solid #1E1E24' }}
     >
-      <StatCard
-        target={total}
-        label="Hoje"
-        color="#F0F0F3"
-        icon={<Calendar size={13} />}
-      />
-      <StatCard
-        target={attended}
-        label="Compareceram"
-        color="#16A34A"
-        icon={<UserCheck size={13} />}
-        total={total}
-        showProgress
-      />
-      <StatCard
-        target={noShows}
-        label="Faltaram"
-        color="#DC2626"
-        icon={<UserX size={13} />}
-        total={total}
-        showProgress
-      />
-      <StatCard
-        target={newClients}
-        label="Novos Clientes"
-        color="#F59E0B"
-        icon={<UserPlus size={13} />}
-      />
+      {/* Stats: 2x2 grid on mobile, flex row on desktop */}
+      <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center md:gap-3">
+        <StatCard
+          target={total}
+          label="Hoje"
+          color="#F0F0F3"
+          icon={<Calendar size={13} />}
+        />
+        <StatCard
+          target={attended}
+          label="Compareceram"
+          color="#16A34A"
+          icon={<UserCheck size={13} />}
+          total={total}
+          showProgress
+        />
+        <StatCard
+          target={noShows}
+          label="Faltaram"
+          color="#DC2626"
+          icon={<UserX size={13} />}
+          total={total}
+          showProgress
+        />
+        <StatCard
+          target={newClients}
+          label="Novos Clientes"
+          color="#F59E0B"
+          icon={<UserPlus size={13} />}
+        />
+
+        {/* Desktop button — inside flex row for ml-auto */}
+        <button
+          onClick={onNewAppointment}
+          className="hidden md:block ml-auto px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
+          style={{ background: '#F97316', color: '#08080A', borderRadius: '6px' }}
+        >
+          + Novo Agendamento
+        </button>
+      </div>
+
+      {/* Mobile button — full width below grid */}
       <button
         onClick={onNewAppointment}
-        className="ml-auto px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80"
-        style={{
-          background: '#F97316',
-          color: '#08080A',
-          borderRadius: '6px',
-        }}
+        className="md:hidden mt-3 w-full py-2.5 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 active:opacity-60"
+        style={{ background: '#F97316', color: '#08080A', borderRadius: '6px' }}
       >
         + Novo Agendamento
       </button>

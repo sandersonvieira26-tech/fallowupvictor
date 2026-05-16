@@ -29,13 +29,14 @@ describe('StatsBar', () => {
 
   it('renders the new appointment button', () => {
     render(<StatsBar {...defaultProps} />)
-    expect(screen.getByRole('button', { name: /novo agendamento/i })).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button', { name: /novo agendamento/i })
+    expect(buttons.length).toBeGreaterThanOrEqual(1)
   })
 
   it('calls onNewAppointment when button is clicked', async () => {
     const onNewAppointment = jest.fn()
     render(<StatsBar {...defaultProps} onNewAppointment={onNewAppointment} />)
-    await userEvent.click(screen.getByRole('button', { name: /novo agendamento/i }))
+    await userEvent.click(screen.getAllByRole('button', { name: /novo agendamento/i })[0])
     expect(onNewAppointment).toHaveBeenCalledTimes(1)
   })
 })

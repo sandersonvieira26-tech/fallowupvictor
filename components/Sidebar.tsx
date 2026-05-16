@@ -24,7 +24,7 @@ export default function Sidebar({ activeTab, onTabChange, spinCount }: SidebarPr
 
   return (
     <aside
-      className="flex h-screen w-60 shrink-0 flex-col"
+      className="hidden md:flex h-screen w-60 shrink-0 flex-col"
       style={{ background: '#0F0F12', borderRight: '1px solid #1E1E24' }}
     >
       {/* Logo */}
