@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import StatsBar from '@/components/StatsBar'
 
+jest.mock('@/lib/useCountUp', () => ({
+  useCountUp: (target: number) => target,
+}))
+
 describe('StatsBar', () => {
   const defaultProps = {
     total: 8,
