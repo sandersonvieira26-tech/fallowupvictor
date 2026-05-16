@@ -6,15 +6,19 @@ interface AppointmentRowProps {
   showDate?: boolean
   onStatusChange: (id: string, status: AppointmentStatus) => void
   isUpdating?: boolean
+  isNew?: boolean
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('pt-BR', {
-    weekday: 'long',
+const STATUS_DOT_COLOR: Record<string, string> = {
+  scheduled: '#2E2E36',
+  attended: '#16A34A',
+  'no-show': '#DC2626',
+}
+
+function formatShortDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('pt-BR', {
     day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+    month: '2-digit',
     timeZone: 'UTC',
   })
 }
@@ -24,25 +28,54 @@ export default function AppointmentRow({
   showDate = false,
   onStatusChange,
   isUpdating = false,
+  isNew = false,
 }: AppointmentRowProps) {
   const { client } = appointment
+  const dotColor = STATUS_DOT_COLOR[appointment.status] ?? '#2E2E36'
 
   return (
-    <div className="flex items-center gap-3 rounded-md bg-[#1e293b] px-3 py-2.5">
+    <div
+      className={`flex items-center gap-3 px-4 py-3 transition-colors ${isNew ? 'highlight-new' : ''}`}
+      style={{
+        background: '#0F0F12',
+        borderBottom: '1px solid #1E1E24',
+      }}
+    >
+      <span
+        className="h-2 w-2 shrink-0 rounded-full transition-colors duration-200"
+        style={{ background: dotColor }}
+      />
+
       {showDate && (
-        <div className="w-24 shrink-0 text-xs text-slate-400">
-          {formatDate(appointment.date)}
-        </div>
+        <span
+          className="w-12 shrink-0 text-[11px]"
+          style={{ fontFamily: 'var(--font-jetbrains), monospace', color: '#6B6B78' }}
+        >
+          {formatShortDate(appointment.date)}
+        </span>
       )}
+
       <div className="flex-1 min-w-0">
-        <div className="truncate text-xs font-medium text-slate-100">{client.name}</div>
-        <div className="text-[10px] text-slate-500">{client.phone}</div>
+        <p className="truncate text-sm font-medium" style={{ color: '#F0F0F3' }}>
+          {client.name}
+        </p>
+        <p
+          className="text-[11px]"
+          style={{ fontFamily: 'var(--font-jetbrains), monospace', color: '#6B6B78' }}
+        >
+          {client.phone}
+        </p>
       </div>
+
       {client.isNew && (
-        <span className="shrink-0 rounded bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-slate-900">
+        <span
+          className="shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+          style={{ color: '#F59E0B', border: '1px solid #F59E0B', borderRadius: '4px' }}
+        >
           NOVO
         </span>
       )}
+
       <AttendanceToggle
         status={appointment.status}
         onStatusChange={(status) => onStatusChange(appointment.id, status)}
