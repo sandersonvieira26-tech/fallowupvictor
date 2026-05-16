@@ -30,7 +30,7 @@ export default function NewAppointmentModal({
       await onSubmit({ name: name.trim(), phone: phone.trim(), date })
       onClose()
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar agendamento. Tente novamente.')
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao salvar agendamento.')
     } finally {
       setLoading(false)
     }
@@ -40,17 +40,42 @@ export default function NewAppointmentModal({
     if (e.target === e.currentTarget) onClose()
   }
 
+  const inputStyle = {
+    background: '#161619',
+    border: '1px solid #1E1E24',
+    borderRadius: '6px',
+    color: '#F0F0F3',
+    outline: 'none',
+  }
+
+  function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = '#F97316'
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = '#1E1E24'
+  }
+
   return (
     <div
       data-testid="modal-backdrop"
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
     >
-      <div className="w-full max-w-md rounded-lg bg-[#0f172a] border border-[#1e293b] p-6 shadow-xl">
-        <h2 className="mb-4 text-base font-bold text-slate-100">Novo Agendamento</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="name" className="text-xs font-semibold uppercase text-slate-400">
+      <div
+        className="w-full max-w-[480px] mx-4"
+        style={{ background: '#0F0F12', border: '1px solid #1E1E24', borderRadius: '6px' }}
+      >
+        <div className="px-6 py-4" style={{ borderBottom: '1px solid #1E1E24' }}>
+          <h2 className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#F0F0F3' }}>
+            Novo Agendamento
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 py-5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="name" className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#6B6B78' }}>
               Nome do Cliente
             </label>
             <input
@@ -60,11 +85,15 @@ export default function NewAppointmentModal({
               onChange={(e) => setName(e.target.value)}
               disabled={disabled}
               placeholder="Ex: João Silva"
-              className="rounded bg-[#1e293b] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-1 focus:ring-sky-400 disabled:opacity-50"
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              className="w-full px-3 py-2.5 text-sm disabled:opacity-50"
+              style={inputStyle}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="phone" className="text-xs font-semibold uppercase text-slate-400">
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="phone" className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#6B6B78' }}>
               Telefone
             </label>
             <input
@@ -74,11 +103,15 @@ export default function NewAppointmentModal({
               onChange={(e) => setPhone(e.target.value)}
               disabled={disabled}
               placeholder="(11) 9xxxx-xxxx"
-              className="rounded bg-[#1e293b] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-1 focus:ring-sky-400 disabled:opacity-50"
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              className="w-full px-3 py-2.5 text-sm disabled:opacity-50"
+              style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains), monospace' }}
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="date" className="text-xs font-semibold uppercase text-slate-400">
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="date" className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#6B6B78' }}>
               Data
             </label>
             <input
@@ -87,19 +120,28 @@ export default function NewAppointmentModal({
               value={date}
               onChange={(e) => setDate(e.target.value)}
               disabled={disabled}
-              className="rounded bg-[#1e293b] px-3 py-2 text-sm text-slate-100 outline-none focus:ring-1 focus:ring-sky-400 disabled:opacity-50"
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              className="w-full px-3 py-2.5 text-sm disabled:opacity-50"
+              style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains), monospace' }}
             />
           </div>
+
           {submitError && (
-            <div className="rounded bg-red-900/40 px-3 py-2 text-xs text-red-400">
+            <div
+              className="rounded px-3 py-2 text-xs"
+              style={{ background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.3)', color: '#DC2626', borderRadius: '6px' }}
+            >
               {submitError}
             </div>
           )}
-          <div className="flex gap-2 pt-2">
+
+          <div className="flex gap-3 pt-1">
             <button
               type="submit"
               disabled={disabled}
-              className="flex-1 rounded bg-sky-400 py-2 text-sm font-bold text-slate-900 hover:bg-sky-300 disabled:opacity-50 transition-colors"
+              className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
+              style={{ background: '#F97316', color: '#08080A', borderRadius: '6px' }}
             >
               {loading ? 'Salvando...' : 'Salvar Agendamento'}
             </button>
@@ -107,7 +149,8 @@ export default function NewAppointmentModal({
               type="button"
               onClick={onClose}
               disabled={disabled}
-              className="rounded bg-[#1e293b] px-4 py-2 text-sm text-slate-400 hover:text-slate-200 disabled:opacity-50 transition-colors"
+              className="px-5 py-2.5 text-xs transition-colors disabled:opacity-50"
+              style={{ background: '#161619', border: '1px solid #1E1E24', color: '#6B6B78', borderRadius: '6px' }}
             >
               Cancelar
             </button>
